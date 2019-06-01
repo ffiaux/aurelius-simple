@@ -1,0 +1,37 @@
+unit uAluno;
+
+interface
+
+uses
+  Aurelius.Mapping.Attributes, System.Generics.Collections;
+
+type
+  [Entity]
+  [Table('Alunos')]
+  [Id('FId', TIdGenerator.IdentityOrSequence)]
+  TAluno = class
+    private
+      FId: Integer;
+      FNome : String;
+      FMatricula : String;
+      FNota : Double;
+    public
+      property ID : Integer read FId write FId;
+      property Nome : String read FNome write FNome;
+      property Matricula : String read FMatricula write FMatricula;
+      property Nota : Double read FNota write FNota;
+      constructor Create(Nome: String; CPF: String); overload;
+  end;
+
+implementation
+
+{ TAluno }
+
+constructor TAluno.Create(Nome, CPF: String);
+begin
+  FNome := Nome;
+  FCPF := CPF;
+end;
+
+end.
+

@@ -1,0 +1,72 @@
+program AureliusSimples;
+
+{$APPTYPE CONSOLE}
+
+{$R *.res}
+
+uses
+  System.SysUtils,
+  Aurelius.Drivers.MSSQL,
+  Aurelius.Drivers.Interfaces,
+  Aurelius.Engine.ObjectManager,
+  uAluno in 'uAluno.pas',
+  System.Generics.Collections, Aurelius.Criteria.Base, Aurelius.Criteria.Linq;
+
+var
+  MyConnection: IDBConnection;
+  Manager: TObjectManager;
+  Aluno: TAluno;
+  Alunos: TList<TAluno>;
+
+  Results: TObjectList<TAluno>;
+  Criteria: TCriteria<TAluno>;
+  Filter: TCustomCriterion;
+begin
+  try
+  MyConnection := TMSSQLConnection.Create('Server=.\SQLEXPRESS;Database=HibernateTest;TrustedConnection=True');
+
+  Manager := TObjectManager.Create(MyConnection);
+  Aluno := Manager.Find<TAluno>(2);
+
+  Writeln(Aluno.Nome);
+  Writeln(Aluno.Nota);
+  Writeln(Aluno.Matricula);
+
+  Aluno.Nota := 5;
+  Aluno.Matricula := '123';
+  Manager.Flush; //all objects
+
+  Aluno := TAluno.Create('Teste');
+  Aluno.Nota := 7.5;
+  Aluno.Matricula := '000';
+  Manager.Save(Aluno);
+
+  Alunos := Manager.Find<TAluno>.List;
+  //Alunos := Manager.Find<TAluno>.Take(2).OrderBy('Nome').List;
+  Writeln('Manager.Find<TAluno>.List');
+  for Aluno in Alunos do
+    Writeln(Aluno.Nome);
+
+  Alunos := Manager.Find<TAluno>.Where
+  (
+    Linq['Nome'].Like('%Fer%')
+    or Linq['Nome'].Like('%J%')
+  ).List;
+
+  Writeln('Manager.Find<TAluno>.Where.List');
+  for Aluno in Alunos do
+    Writeln(Aluno.Nome);
+
+  Criteria := Manager.Find<TAluno>;
+  Filter := Linq['Nome'] = 'Teste';
+  Criteria.Add(Filter);
+  Results := Criteria.List;
+  Writeln('Criteria');
+  for Aluno in Alunos do
+    Writeln(Aluno.Nome);
+
+  except
+    on E: Exception do
+      Writeln(E.ClassName, ': ', E.Message);
+  end;
+end.
